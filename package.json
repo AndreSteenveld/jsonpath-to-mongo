@@ -34,6 +34,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "core-js": "^2.5.7",
+    "json8-pointer": "^0.7.1",
     "jsonpath": "^1.0.0"
   }
 }
