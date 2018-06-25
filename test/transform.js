@@ -1,7 +1,8 @@
 import test from "ava";
-import transform from "../src";
+import { to_aggregation, to_find } from "../src";
 
-test( "is a function", ( assert ) => assert.true( "function" === typeof transform ) );
+test( "to_aggregation is a function", ( assert ) => assert.true( "function" === typeof to_aggregation ) );
+test( "to_find is a function", ( assert ) => assert.true( "function" === typeof to_find ) );
 
 
 

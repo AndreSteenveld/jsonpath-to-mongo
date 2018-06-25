@@ -1,34 +1,25 @@
 import test from "ava";
-import transform from "../src";
+import { to_aggregation } from "../src";
 
-test( "path :: $[?( true )]", ( assert ) => {
+function mongo_aggregation( assert, path, expection ){
 
-    const pipeline = "$[?( test )]" :: transform( );
+    const pipeline = path :: to_aggregation( );
 
-    assert.fail( );
+    assert.deepEqual( pipeline, expection );
 
-});
+}
 
-test( "path :: $[?( false )]", ( assert ) => {
+const path_pipeline = {
 
-    const pipeline = "$[?( false )]" :: transform( );
+    "$[?( @.property === 37 )]": [{ $match: { "property" : { $eq : 37 } } }],
+    
+    "$.property[?( @ === 37 )]": [{ $match: { "property" : { $eq : 37 } } }],
+    "$.property[?( @ !== 37 )]": [{ $match: { "property" : { $neq : 37 } } }],
 
-    assert.fail( ); 
+    "$.property[?( @ < 37 )]": [{ $match: { "property" : { $lt : 37 } } }],
+    "$.property[?( @ <= 37 )]": [{ $match: { "property" : { $lte : 37 } } }],
 
-});
+};
 
-test( "path :: $[?( @ )]", ( assert ) => {
-
-    const pipeline = "$[?( @ )]" :: transform( );
-
-    assert.fail( );
-
-});
-
-test( "path :: $[?( true === false )]", ( assert ) => {
-
-    const pipeline = "$[?( true === false )]" :: transform( );
-
-    assert.fail( );
-
-});
+for( const [ path, pipeline ] of Object.entries( path_pipeline ) )
+    test( `path :: ${ path }`, mongo_aggregation, path, pipeline ); 

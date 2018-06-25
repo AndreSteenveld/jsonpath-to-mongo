@@ -1,42 +1,14 @@
-import jsonpath from "jsonpath";
-import parse_expression from "jsonpath/lib/aesprim";
+import { Find, Aggregation } from "./transform";
 
-function ast_to_mongo( options, ast = this ){
+export function to_find( options = { }, path = this ){ 
 
-    return [ ];
-
-}
-
-function expand( options = { }, node = this ){ 
-    
-    if( "script_expression" === node.type )
-        throw new Error( "Expansion of script expressions is not supported" );
-
-    return Object.assign( node, { ast } ); 
+    return Find.from_path( path, options );
 
 }
 
-export function transform( options = { }, path = this ){
+export function to_aggregation( options = { }, path = this ){ 
 
-    const 
-        ast = jsonpath
-            .parse( path )
-            .map( ( node ) => {
-
-                switch( node.type ){
-
-                    case "script_expression" :
-                    case "filter_expression" : 
-                        return node :: expand( options );
-
-                    default : return node;
-
-                }
-
-            });
-
-    return [ ...ast :: ast_to_mongo( options ) ];
+    return Aggregation.from_path( path, options );
 
 }
 
-export default transform;
