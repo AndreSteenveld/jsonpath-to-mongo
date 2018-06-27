@@ -1,7 +1,7 @@
 import $ from "core-js/library";
 import aesprim from "jsonpath/lib/aesprim";
 
-import { empty, to_object } from "../utilities";
+import { empty, to_object, truthy } from "../utilities";
 import expression from "./expression";
 
 export const parse = {
@@ -16,13 +16,15 @@ export const parse = {
 
         return $.Object
             .entries( jsonpath( $match, tail ) )
-            .map( ([ key, value ]) => 
+            .map( ([ key, value ]) => {
         
-                [ node.value, key ]
+                const extended_key = [ node.value, key ]
                     .filter( truthy )
-                    .join( "." )
+                    .join( "." );
+
+                return [ extended_key, value ];
                 
-            )
+            })
             .reduce( to_object, empty( ) );
 
     },
@@ -31,9 +33,14 @@ export const parse = {
 
         const 
             [ filter_expression ] = node.value.match( /(^\s*\?\s*\(\s*)(.*?)(\s*\)\s*$)/ ).slice( 2, 3 ),
-            ast = aesprim.parse( filter_expression );
+            ast = aesprim.parse( filter_expression, { 
+                tokens : true,
+                range  : true,
+                loc    : true,
+                source : filter_expression            
+            });
 
-        return tail :: jsonpath( expression( $match, ast.body ) );
+        return tail :: jsonpath( expression( $match, [ ast ] ) );
         
     }
 
