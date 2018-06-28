@@ -1,14 +1,17 @@
-import { Find, Aggregation } from "./transform";
+import jsonpath from "jsonpath";
+import walk from "./walker/jsonpath";
+
 
 export function to_find( options = { }, path = this ){ 
-
-    return Find.from_path( path, options );
 
 }
 
 export function to_aggregation( options = { }, path = this ){ 
 
-    return Aggregation.from_path( path, options );
+    const 
+        ast    = jsonpath.parse( path ).map( ({ expression }) => expression ),
+        $match = ast :: walk( );
 
+    return [{ $match }];
 }
 

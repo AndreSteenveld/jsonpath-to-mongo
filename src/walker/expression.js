@@ -111,17 +111,12 @@ export const parse_expressions_as = {
             case "in" : 
                 return in_operator( $match, binary_expression );
                
-            default: {
-
-                throw new Error( "Not implemented" );
-
-            }
+            default:
+                throw new Error( `walker/expression :: Unknown binary operator [ ${ binary_expression.operator } ]` );
 
         }
 
     },
-
-
 
     member( $match = null, member_expression = this ){
 
@@ -154,16 +149,52 @@ export const parse_expressions_as = {
 
     call( $match = empty( ), call_expression = this ){ },
 
-    logical( $match = null, logical_expression = this ){ 
+    logical( $match = empty( ), logical_expression = this ){ 
 
-        
+        function and( $match, node ){
 
-         //case "&&":
-            
-            //case "||":
-            // In case we want to express the not-or operator from mongo we are going
-            // to overload the || operator, exprecting a unary not followed by an array.
-            //case "|| ![ ]" :
+            return Object.assign( 
+                
+                $match, 
+                
+                { 
+                    $and : [
+                        node.left :: expression( empty( ) ),
+                        node.right :: expression( empty( ) )
+                    ]
+                }
+
+            );
+
+        }
+
+        function or( $match, node ){
+
+            return Object.assign(
+
+                $match,
+
+                {
+                    $or : [
+                        node.left :: expression( empty( ) ),
+                        node.right :: expression( empty( ) )
+                    ]
+                }
+
+            );
+
+        }
+
+        switch( logical_expression.operator ){
+
+            case "&&" : return and( $match, logical_expression );
+            case "||" : return or( $match, logical_expression );
+
+            default :
+                throw new Error( `walker/expression :: Unknown logical operator [ ${ logical_expression.operator } ]` );
+
+
+        }
 
     },
 

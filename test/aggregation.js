@@ -45,7 +45,84 @@ const path_pipeline = {
 
         }}
 
-    ]
+    ],
+
+    "$[?( @.the == 'good' && @.the == 'bad' && @.the == 'ugly' )]": [
+
+        { $match: {
+
+            $and: [
+                
+                { 
+                    $and: [
+                        { "the" : { $eq : "good" } },
+                        { "the" : { $eq : "bad" } },
+                    ]
+                },
+
+                { "the" : { $eq : "ugly" } }
+            
+            ]
+
+        }}
+
+    ],
+
+    "$[?( @.touch == 'head' || @.touch == 'shoulders' || @.touch == 'knees' || @.touch == 'toes' )]": [
+        
+        { $match: {
+            $or: [
+                { 
+                    $or : [
+                        {
+                            $or : [
+                            
+                                { "touch" : { $eq : "head" } },
+                                { "touch" : { $eq : "shoulders" } },
+                            
+                            ]
+                        },
+                        { "touch" : { $eq : "knees" } }
+                    ]
+                },
+                { "touch" : { $eq : "toes" } }
+            ]
+        }}
+
+    ],
+
+    "$[?( @geo.distance({ type : 'Point', coordinates : [ 0.0, 0.0 ] }) < 10000 )]":  
+        
+        Object.assign( [ { $match : { } } ], {
+
+            [ Symbol.for( "$geoNear" ) ] : [
+                { $geoNear : {
+    
+                    spherical : true,
+                    limit     : 0xFFFFFFFF,
+    
+                    minDistance : 0,
+                    maxDistance : 10000,
+    
+                    distanceField : "@distance",
+    
+                    near : {
+                        type : "Point",
+                        coordinates : [ 0.0, 0.0 ]
+                    }
+    
+                }},
+    
+                { $project: {
+    
+                    "_id"       : "$_id",
+                    "@distance" : "$@distance",
+    
+                }}
+            ]
+
+        })
+    
 };
 
 for( const [ path, pipeline ] of Object.entries( path_pipeline ) )
