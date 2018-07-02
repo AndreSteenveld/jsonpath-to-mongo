@@ -12,6 +12,12 @@ export function to_aggregation( options = { }, path = this ){
         ast    = jsonpath.parse( path ).map( ({ expression }) => expression ),
         $match = ast :: walk( );
 
-    return [{ $match }];
+    return {
+
+        $match,
+
+        [ Symbol.iterator ] : function * ( ){ yield * [{ $match }] }
+
+    };
 }
 

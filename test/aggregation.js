@@ -3,7 +3,7 @@ import { to_aggregation } from "../src";
 
 function mongo_aggregation( assert, path, expection ){
 
-    const pipeline = path :: to_aggregation( );
+    const pipeline = [ ...path :: to_aggregation( ) ];
 
     assert.deepEqual( pipeline, expection );
 
