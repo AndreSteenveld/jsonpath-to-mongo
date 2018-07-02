@@ -1,0 +1,40 @@
+{
+  "name": "@andresteenveld/jsonpath-to-mongo",
+  "version": "1.0.0",
+  "description": "Convert a jsonpath expression to a mongo db aggregation",
+  "main": "bin/index.js",
+  "scripts": {
+    "test": "env NODE_ENV='test' nyc ava",
+    "test:debug": "env NODE_ENV='test' node --inspect --inspect-brk node_modules/ava/profile.js"
+  },
+  "ava": {
+    "require": "babel-register",
+    "babel": "inherit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreSteenveld/jsonpath-to-mongo.git"
+  },
+  "author": "Andre Steenveld <andre.steenveld@gmail.com>",
+  "license": "LGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/AndreSteenveld/jsonpath-to-mongo/issues"
+  },
+  "homepage": "https://github.com/AndreSteenveld/jsonpath-to-mongo#readme",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "nyc": "^12.0.2"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "core-js": "^2.5.7",
+    "json8-pointer": "^0.7.1",
+    "jsonpath": "^1.0.0"
+  }
+}
