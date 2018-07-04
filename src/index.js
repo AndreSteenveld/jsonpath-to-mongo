@@ -1,5 +1,6 @@
 import jsonpath from "jsonpath";
 import walk from "./walker/jsonpath";
+import { empty } from "./utilities";
 
 
 export function to_find( options = { }, path = this ){ 
@@ -15,6 +16,8 @@ export function to_aggregation( options = { }, path = this ){
     return {
 
         $match,
+        
+        $geoNear : empty( ),
 
         [ Symbol.iterator ] : function * ( ){ yield * [{ $match }] }
 
