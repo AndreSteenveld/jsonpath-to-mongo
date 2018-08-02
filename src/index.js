@@ -2,8 +2,51 @@ import jsonpath from "jsonpath";
 import walk from "./walker/jsonpath";
 import { empty } from "./utilities";
 
+export const $MATCH    = Symbol.for( "$match" );
+export const $GEO_NEAR = Symbol.for( "$geoNear" ); 
 
-export function to_find( options = { }, path = this ){ 
+function result_proxy( target ){
+
+    return new Proxy(
+
+        target,
+    
+        { 
+        
+            set( target, key, value, receiver ){ 
+    
+                if( $GEO_NEAR === key ){
+    
+                    target[ $GEO_NEAR ][ value.distanceField ] = value;
+    
+                } else if( $MATCH === key ){
+
+                    target[ $MATCH ] = value;
+
+                } else {
+    
+                    target[ $MATCH ][ key ] = value;
+    
+                }
+    
+                return true;
+    
+            },
+        
+            get( target, key, receiver ){ 
+    
+                return ( 
+                
+                      $GEO_NEAR === key ? target[ $GEO_NEAR ]
+                    : $MATCH    === key ? target[ $MATCH ]
+                    :                     target[ $MATCH ][ key ] 
+                
+                );
+
+            }
+    
+        }
+    );
 
 }
 
@@ -11,16 +54,25 @@ export function to_aggregation( options = { }, path = this ){
 
     const 
         ast    = jsonpath.parse( path ).map( ({ expression }) => expression ),
-        $match = ast :: walk( );
+        result = Object.assign( empty( ), {
 
-    return {
-
-        $match,
+            [ $MATCH    ] : empty( ),
+            [ $GEO_NEAR ] : empty( ),
+    
+            [ Symbol.iterator ] : function * ( ){ yield * [ ... this[ Symbol.for( "$match" ) ] ]; }
+    
+        });
         
-        $geoNear : empty( ),
+    ast :: walk( result_proxy( result ) );
 
-        [ Symbol.iterator ] : function * ( ){ yield * [{ $match }] }
-
-    };
+    return result;
+    
 }
+
+
+
+
+
+
+
 

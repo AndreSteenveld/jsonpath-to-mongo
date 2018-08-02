@@ -1,23 +1,24 @@
 import $ from "core-js/library";
 import aesprim from "jsonpath/lib/aesprim";
 
+import { $MATCH, $GEO_NEAR } from "../";
 import { empty, to_object, truthy } from "../utilities";
 import expression from "./expression";
 
 export const parse = {
 
-    root( $match = empty( ), [ node = null, ...tail ] = this ){ 
+    root( $match, [ node = null, ...tail ] = this ){ 
         
         return jsonpath( $match, tail ); 
     
     },
 
-    identifier( $match = empty( ), [ node = null, ...tail ] = this ) {
+    identifier( $match, [ node = null, ...tail ] = this ) {
 
-        return $.Object
-            .entries( jsonpath( $match, tail ) )
+        $match[ $MATCH ] = $.Object
+            .entries( jsonpath( $match, tail )[ $MATCH ] )
             .map( ([ key, value ]) => {
-        
+
                 const extended_key = [ node.value, key ]
                     .filter( truthy )
                     .join( "." );
@@ -27,9 +28,11 @@ export const parse = {
             })
             .reduce( to_object, empty( ) );
 
+        return $match;
+
     },
 
-    filter_expression( $match = empty( ), [ node = null, ...tail ] = this ){
+    filter_expression( $match, [ node = null, ...tail ] = this ){
 
         const 
             [ filter_expression ] = node.value.match( /(^\s*\?\s*\(\s*)(.*?)(\s*\)\s*$)/ ).slice( 2, 3 ),
@@ -46,7 +49,7 @@ export const parse = {
 
 }
 
-export function jsonpath( $match = empty( ), [ node = null, ...tail ] = this ){
+export function jsonpath( $match, [ node = null, ...tail ] = this ){
 
     if( null === node )
         return $match;

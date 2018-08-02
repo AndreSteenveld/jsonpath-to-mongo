@@ -1,5 +1,7 @@
-import { empty, flatten } from "../utilities";
 import jsonpath from "jsonpath";
+
+import { $MATCH, $GEO_NEAR } from "../";
+import { empty, flatten } from "../utilities";
 
 export const parse_expressions_as = {
 
@@ -233,7 +235,7 @@ export function expression( $match = null, node = this ){
 
 }
 
-export default function filter_expression( $match = empty( ), [ node = null, ...tail ] = this ){
+export default function filter_expression( $match, [ node = null, ...tail ] = this ){
 
     if( null === node )
         return $match;
