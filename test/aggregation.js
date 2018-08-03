@@ -107,7 +107,7 @@ for( const [ path, pipeline ] of Object.entries( matches ) )
 
 const spatial = {
     
-    "$[?( @geo.distance({ type : 'Point', coordinates : [ 0.0, 0.0 ] }) < 10000 )]": {
+    "$[( @geo.distance([ 0.0, 0.0 ], [ 0, 0 ], '@distance' ) )]": {
 
         "@distance": [ 
 
@@ -117,7 +117,7 @@ const spatial = {
                 limit     : 0xFFFFFFFF,
 
                 minDistance : 0,
-                maxDistance : 10000,
+                maxDistance : 0,
 
                 distanceField : "@distance",
 
@@ -127,10 +127,141 @@ const spatial = {
                 }
 
             }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
         
         ]
 
-    }
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ]) )]": {
+
+        "@distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
+        
+        ] 
+
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ], [ ], '@other_distance' ) )]": {
+
+        "@other_distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@other_distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@other_distance" : true,
+
+            }}
+        
+        ]
+
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ]) )][( @geo.distance([ 0.0, 0.0 ], [ ], '@other' ) )]": {
+
+        "@distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
+        
+        ],
+        
+        "@other": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@other",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@other" : true,
+
+            }}
+        
+        ],
+
+    },    
 
 };
 

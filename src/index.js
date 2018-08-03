@@ -1,6 +1,6 @@
 import jsonpath from "jsonpath";
 import walk from "./walker/jsonpath";
-import { empty } from "./utilities";
+import { empty, get } from "./utilities";
 
 export const $MATCH    = Symbol.for( "$match" );
 export const $GEO_NEAR = Symbol.for( "$geoNear" ); 
@@ -17,7 +17,7 @@ function result_proxy( target ){
     
                 if( $GEO_NEAR === key ){
     
-                    target[ $GEO_NEAR ][ value.distanceField ] = value;
+                    target[ $GEO_NEAR ][ value :: get( "/0/$geoNear/distanceField" ) ] = value;
     
                 } else if( $MATCH === key ){
 

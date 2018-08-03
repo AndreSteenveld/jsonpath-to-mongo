@@ -3,7 +3,7 @@ import aesprim from "jsonpath/lib/aesprim";
 
 import { $MATCH, $GEO_NEAR } from "../";
 import { empty, to_object, truthy } from "../utilities";
-import expression from "./expression";
+import { default as expression, script_expression } from "./expression";
 
 export const parse = {
 
@@ -45,9 +45,24 @@ export const parse = {
 
         return tail :: jsonpath( expression( $match, [ ast ] ) );
         
+    },
+
+    script_expression( $match, [ node = null, ...tail ] = this ){
+
+        const
+            [ script ] = node.value.match( /(^\s*\(\s*)(.*?)(\s*\)\s*$)/ ).slice( 2, 3 ),
+            ast = aesprim.parse( script, { 
+                tokens : true,
+                range  : true,
+                loc    : true,
+                source : script            
+            });
+
+        return tail :: jsonpath( script_expression( $match, [ ast ] ) );
+
     }
 
-}
+};
 
 export function jsonpath( $match, [ node = null, ...tail ] = this ){
 
@@ -65,13 +80,14 @@ export function jsonpath( $match, [ node = null, ...tail ] = this ){
         // We flatten the filter and script expression in to the entire AST, there is no reason
         // to catch these as they never appear in the generated AST.
         case "filter_expression" : return parse.filter_expression( $match, [ node, ...tail ] );
-        
+        case "script_expression" : return parse.script_expression( $match, [ node, ...tail ] );
         //
         // Unknown node types...
         //
         default : {
 
             console.warn( `Unknown node type :: ${ node }` );
+            console.dir( node );
 
             return $match;
             
