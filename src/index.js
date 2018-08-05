@@ -17,7 +17,7 @@ function result_proxy( target ){
     
                 if( $GEO_NEAR === key ){
     
-                    target[ $GEO_NEAR ][ value :: get( "/0/$geoNear/distanceField" ) ] = value;
+                    target[ $GEO_NEAR ][ value :: get( "/1/$project/path/$literal" ) ] = value;
     
                 } else if( $MATCH === key ){
 

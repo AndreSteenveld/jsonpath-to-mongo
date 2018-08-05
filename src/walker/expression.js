@@ -275,13 +275,11 @@ export function script_expression( $match, [ node = null, ...tail ] = this ){
     if( null === node )
         return $match;
 
-    debugger;
-
     const 
         script = node :: get( "/body/0/expression" ),
         callee = script.callee :: expression( );
         
-    const [ coordinates, [ minDistance = 0, maxDistance = 40075 ] = [ ], distanceField = "@distance" ] = script.arguments.map( n => n :: expression( ) );
+    const [ coordinates, [ minDistance = 0, maxDistance = 40075 * 1000 ] = [ ], distance_field = "@distance" ] = script.arguments.map( n => n :: expression( ) );
 
     if( "@geo.distance" !== callee.join( "." ) )
         throw new Error( "Unknown script!" );
@@ -291,12 +289,12 @@ export function script_expression( $match, [ node = null, ...tail ] = this ){
         { $geoNear : {
 
             spherical : true,
-            limit     : 0xFFFFFFFF,
+            limit     : 0xEFFFFFF,
 
             minDistance,
             maxDistance,
 
-            distanceField,
+            distanceField : "value",
 
             near : {
                 type : "Point",
@@ -307,8 +305,9 @@ export function script_expression( $match, [ node = null, ...tail ] = this ){
 
         { $project: {
 
-            _id : true,
-            [ distanceField ] : true,
+            _id   : true,
+            value : true,
+            path  : { $literal : distance_field }
 
         }}
     
