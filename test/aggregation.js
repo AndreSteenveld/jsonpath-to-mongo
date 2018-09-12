@@ -1,15 +1,24 @@
 import test from "ava";
-import { to_aggregation } from "../src";
+import { to_aggregation, $MATCH, $GEO_NEAR } from "../src";
 
-function mongo_aggregation( assert, path, expection ){
 
-    const pipeline = [ ...path :: to_aggregation( ) ];
+function mongo_spatial_aggregation( assert, path, expection ){
+
+    const pipeline = ( path :: to_aggregation( ) )[ $GEO_NEAR ];
 
     assert.deepEqual( pipeline, expection );
 
 }
 
-const path_pipeline = {
+function mongo_match_aggregation( assert, path, expection ){
+
+    const $match = ( path :: to_aggregation( ) )[ $MATCH ];
+
+    assert.deepEqual( [{ $match }], expection );
+
+}
+
+const matches = {
 
     "$[?( @.property === 37 )]": [{ $match: { "property" : { $eq : 37 } } }],
     "$[?( @.property.is.nested.deeply === 37 )]": [{ $match: { "property.is.nested.deeply" : { $eq : 37 } } }],
@@ -91,39 +100,170 @@ const path_pipeline = {
 
     ],
 
-    "$[?( @geo.distance({ type : 'Point', coordinates : [ 0.0, 0.0 ] }) < 10000 )]":  
-        
-        Object.assign( [ { $match : { } } ], {
-
-            [ Symbol.for( "$geoNear" ) ] : [
-                { $geoNear : {
-    
-                    spherical : true,
-                    limit     : 0xFFFFFFFF,
-    
-                    minDistance : 0,
-                    maxDistance : 10000,
-    
-                    distanceField : "@distance",
-    
-                    near : {
-                        type : "Point",
-                        coordinates : [ 0.0, 0.0 ]
-                    }
-    
-                }},
-    
-                { $project: {
-    
-                    "_id"       : "$_id",
-                    "@distance" : "$@distance",
-    
-                }}
-            ]
-
-        })
-    
 };
 
-for( const [ path, pipeline ] of Object.entries( path_pipeline ) )
-    test( `path :: ${ path }`, mongo_aggregation, path, pipeline ); 
+for( const [ path, pipeline ] of Object.entries( matches ) )
+    test( `path :: ${ path }`, mongo_match_aggregation, path, pipeline ); 
+
+const spatial = {
+    
+    "$[( @geo.distance([ 0.0, 0.0 ], [ 0, 0 ], '@distance' ) )]": {
+
+        "@distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 0,
+
+                distanceField : "@distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
+        
+        ]
+
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ]) )]": {
+
+        "@distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
+        
+        ] 
+
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ], [ ], '@other_distance' ) )]": {
+
+        "@other_distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@other_distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@other_distance" : true,
+
+            }}
+        
+        ]
+
+    },
+
+    "$[( @geo.distance([ 0.0, 0.0 ]) )][( @geo.distance([ 0.0, 0.0 ], [ ], '@other' ) )]": {
+
+        "@distance": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@distance",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@distance" : true,
+
+            }}
+        
+        ],
+        
+        "@other": [ 
+
+            { $geoNear : {
+    
+                spherical : true,
+                limit     : 0xFFFFFFFF,
+
+                minDistance : 0,
+                maxDistance : 40075,
+
+                distanceField : "@other",
+
+                near : {
+                    type : "Point",
+                    coordinates : [ 0.0, 0.0 ]
+                }
+
+            }}, 
+
+            { $project: {
+
+                _id         : true,
+                "@other" : true,
+
+            }}
+        
+        ],
+
+    },    
+
+};
+
+for( const [ path, pipelines ] of Object.entries( spatial ) )
+    test( `path :: ${ path }`, mongo_spatial_aggregation, path, pipelines );

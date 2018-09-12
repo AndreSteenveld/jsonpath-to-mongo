@@ -1,5 +1,8 @@
-import { empty, flatten } from "../utilities";
 import jsonpath from "jsonpath";
+
+import { $MATCH, $GEO_NEAR } from "../";
+import { empty, flatten } from "../utilities";
+import { get } from "../utilities";
 
 export const parse_expressions_as = {
 
@@ -143,7 +146,11 @@ export const parse_expressions_as = {
         
     },
 
-    array( $match = null, array_expression = this ){ },
+    array( $match = null, array_expression = this ){ 
+
+        return array_expression.elements.map( ( e ) => e :: expression( ) );
+
+    },
 
     object( $match = null, object_expression = this ){ },
 
@@ -210,14 +217,14 @@ export function expression( $match = null, node = this ){
         case "BinaryExpression"  : return parse_expressions_as.binary( $match, node ); 
 
         case "Literal" : return parse_expressions_as.literal( $match, node );
+        case "ArrayExpression": return parse_expressions_as.array( $match, node );
 
         case "Identifier":
         case "MemberExpression" : 
             return parse_expressions_as.member( $match, node );
 
-        case "ArrayExpression":
         case "ObjectExpression":
-        case "CallExpression":                        
+        case "CallExpression":                    
         case "UnaryExpression":
             throw new Error( "Expression type not implemented yet" );
 
@@ -233,7 +240,7 @@ export function expression( $match = null, node = this ){
 
 }
 
-export default function filter_expression( $match = empty( ), [ node = null, ...tail ] = this ){
+export default function filter_expression( $match, [ node = null, ...tail ] = this ){
 
     if( null === node )
         return $match;
@@ -262,3 +269,51 @@ export default function filter_expression( $match = empty( ), [ node = null, ...
     return expression( $match, expressions[ 0 ] );
 
 };
+
+export function script_expression( $match, [ node = null, ...tail ] = this ){
+
+    if( null === node )
+        return $match;
+
+    const 
+        script = node :: get( "/body/0/expression" ),
+        callee = script.callee :: expression( );
+        
+    const [ coordinates, [ minDistance = 0, maxDistance = 40075 * 1000 ] = [ ], distance_field = "@distance" ] = script.arguments.map( n => n :: expression( ) );
+
+    if( "@geo.distance" !== callee.join( "." ) )
+        throw new Error( "Unknown script!" );
+
+    $match[ $GEO_NEAR ] = [ 
+
+        { $geoNear : {
+
+            spherical : true,
+            limit     : 0xEFFFFFF,
+
+            minDistance,
+            maxDistance,
+
+            distanceField : "value",
+
+            near : {
+                type : "Point",
+                coordinates
+            }
+
+        }}, 
+
+        { $project: {
+
+            _id   : true,
+            value : true,
+            path  : { $literal : distance_field }
+
+        }}
+    
+    ]; 
+
+
+    return $match;
+
+}

@@ -1,8 +1,21 @@
 import oo_pointer from "json8-pointer";
+import jsonpath from "jsonpath";
 
 export function noop( ){ }
 
 export function identity( v ){ return v; }
+
+export function query( path ){
+
+    return jsonpath.query( this, path );
+
+}
+
+export function path( path, default_value ){
+
+    return jsonpath.value( this, path ) :: value( default_value );
+
+}
 
 export function value( value ){
     
