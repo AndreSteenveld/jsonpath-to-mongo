@@ -114,12 +114,12 @@ const spatial = {
             { $geoNear : {
     
                 spherical : true,
-                limit     : 0xFFFFFFFF,
+                limit     : 0xEFFFFFF,
 
                 minDistance : 0,
                 maxDistance : 0,
 
-                distanceField : "@distance",
+                distanceField : "value",
 
                 near : {
                     type : "Point",
@@ -130,8 +130,9 @@ const spatial = {
 
             { $project: {
 
-                _id         : true,
-                "@distance" : true,
+                _id   : true,
+                value : true,
+                path  : { $literal : "@distance" },
 
             }}
         
@@ -146,12 +147,12 @@ const spatial = {
             { $geoNear : {
     
                 spherical : true,
-                limit     : 0xFFFFFFFF,
+                limit     : 0xEFFFFFF,
 
                 minDistance : 0,
-                maxDistance : 40075,
+                maxDistance : 40075000,
 
-                distanceField : "@distance",
+                distanceField : "value",
 
                 near : {
                     type : "Point",
@@ -162,8 +163,9 @@ const spatial = {
 
             { $project: {
 
-                _id         : true,
-                "@distance" : true,
+                _id   : true,
+                value : true,
+                path  : { $literal : "@distance" },
 
             }}
         
@@ -178,12 +180,12 @@ const spatial = {
             { $geoNear : {
     
                 spherical : true,
-                limit     : 0xFFFFFFFF,
+                limit     : 0xEFFFFFF,
 
                 minDistance : 0,
-                maxDistance : 40075,
+                maxDistance : 40075000,
 
-                distanceField : "@other_distance",
+                distanceField : "value",
 
                 near : {
                     type : "Point",
@@ -194,8 +196,9 @@ const spatial = {
 
             { $project: {
 
-                _id         : true,
-                "@other_distance" : true,
+                _id   : true,
+                value : true,
+                path  : { $literal : "@other_distance" },
 
             }}
         
@@ -210,12 +213,12 @@ const spatial = {
             { $geoNear : {
     
                 spherical : true,
-                limit     : 0xFFFFFFFF,
+                limit     : 0xEFFFFFF,
 
                 minDistance : 0,
-                maxDistance : 40075,
+                maxDistance : 40075000,
 
-                distanceField : "@distance",
+                distanceField : "value",
 
                 near : {
                     type : "Point",
@@ -227,7 +230,8 @@ const spatial = {
             { $project: {
 
                 _id         : true,
-                "@distance" : true,
+                value       : true,
+                path        : { $literal : "@distance" },
 
             }}
         
@@ -238,12 +242,12 @@ const spatial = {
             { $geoNear : {
     
                 spherical : true,
-                limit     : 0xFFFFFFFF,
+                limit     : 0xEFFFFFF,
 
                 minDistance : 0,
-                maxDistance : 40075,
+                maxDistance : 40075000,
 
-                distanceField : "@other",
+                distanceField : "value",
 
                 near : {
                     type : "Point",
@@ -254,8 +258,9 @@ const spatial = {
 
             { $project: {
 
-                _id         : true,
-                "@other" : true,
+                _id   : true,
+                value : true,
+                path  : { $literal : "@other" },
 
             }}
         
