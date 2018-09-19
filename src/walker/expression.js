@@ -18,17 +18,17 @@ export const parse_expressions_as = {
 
         function equality_operator( $match, node ){
 
-            function to_mongo_operator( operator = this ){
+            function to_mongo_operator_for_literal( value, operator = this ){
         
                 switch( operator ){
         
                     case "=="  :
                     case "===" :
-                        return "$eq";
+                        return { "$eq" : value };
         
                     case "!="  :
                     case "!==" :
-                        return "$neq";
+                        return { "$ne" : value };
         
                     default :
                         throw new Error( "Unknown equality operator" );
@@ -36,17 +36,49 @@ export const parse_expressions_as = {
                 }
         
             }
+
+            function to_mongo_operator_for_regexp( value, operator = this ){
+
+                switch( operator ){
+
+                    case "=="  : 
+                    case "===" :
+                        return { "$in" : [ value ] };
+
+                    case "!="  :
+                    case "!==" :
+                        return { "$nin" : [ value ] };
+
+                    default: new Error( "Unknown equality operator" );
+
+                }
+
+            }
        
+            function to_equality_expression( node, path, value, to_mongo_operator = this ){ 
+
+                const operator = node.operator :: to_mongo_operator( value );
+
+                return Object.assign( $match, { [ path.join( "." ) ] : operator } );
+
+            }
+
             const { left, right } = node;
-                
-            const operator = node.operator :: to_mongo_operator( );
-        
+
             const 
                 path  = jsonpath.value([ left, right ], `$[?( (/MemberExpression|Identifier/) . test( @.type ) )]` ) :: expression( ),
                 value = jsonpath.value([ left, right ], `$[?( (/Literal/) . test( @.type ) )]` ) :: expression( );
-        
-            return Object.assign( $match, { [ path.join( "." ) ] : { [ operator ] : value } } ); 
-        
+
+            switch( true ){
+
+                case value instanceof RegExp:
+                    return to_mongo_operator_for_regexp :: to_equality_expression( node, path, value );
+
+                default:
+                    return to_mongo_operator_for_literal :: to_equality_expression( node, path, value );
+
+            }
+
         }
         
         function comparison_operator( $match, node ){
