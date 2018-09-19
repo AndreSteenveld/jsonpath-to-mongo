@@ -100,6 +100,26 @@ const matches = {
 
     ],
 
+    "$[?( @.property === /abc/i )]": [
+
+        { $match: {
+
+            property : { $in : [ /abc/i ] }
+
+        }}
+
+    ],
+
+    "$[?( @.property !== /abc/i )]": [
+
+        { $match: {
+
+            property : { $nin : [ /abc/i ] }
+
+        }}
+
+    ]
+
 };
 
 for( const [ path, pipeline ] of Object.entries( matches ) )
