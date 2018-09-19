@@ -28,7 +28,7 @@ export const parse_expressions_as = {
         
                     case "!="  :
                     case "!==" :
-                        return { "$neq" : value };
+                        return { "$ne" : value };
         
                     default :
                         throw new Error( "Unknown equality operator" );

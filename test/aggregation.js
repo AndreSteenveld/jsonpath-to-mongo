@@ -25,7 +25,7 @@ const matches = {
     "$.property[?( @.is.nested === 37 )]": [{ $match: { "property.is.nested" : { $eq : 37 } } }],
     
     "$.property[?( @ === 37 )]": [{ $match: { "property" : { $eq : 37 } } }],
-    "$.property[?( @ !== 37 )]": [{ $match: { "property" : { $neq : 37 } } }],
+    "$.property[?( @ !== 37 )]": [{ $match: { "property" : { $ne : 37 } } }],
 
     "$.property[?( @ < 37 )]": [{ $match: { "property" : { $lt : 37 } } }],
     "$.property[?( @ <= 37 )]": [{ $match: { "property" : { $lte : 37 } } }],
