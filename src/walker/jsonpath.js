@@ -2,7 +2,7 @@ import $ from "core-js/library";
 import aesprim from "jsonpath/lib/aesprim";
 
 import { $MATCH, $GEO_NEAR } from "../";
-import { empty, to_object, truthy } from "../utilities";
+import { empty, to_object, truthy, property } from "../utilities";
 import { default as expression, script_expression } from "./expression";
 
 export const parse = {
@@ -15,8 +15,10 @@ export const parse = {
 
     identifier( $match, [ node = null, ...tail ] = this ) {
 
+        const computed_tail = jsonpath( $match, tail );
+
         $match[ $MATCH ] = $.Object
-            .entries( jsonpath( $match, tail )[ $MATCH ] )
+            .entries( computed_tail :: property( $MATCH, computed_tail ) )
             .map( ([ key, value ]) => {
 
                 if( "$" === key[ 0 ] )
@@ -37,11 +39,13 @@ export const parse = {
 
     wildcard: function( $match, [ node = null, ...tail ] = this ){
 
-        return { [ $MATCH ] : { 
-            
-            $elemMatch : tail :: jsonpath( empty( ) ) 
-        
-        }};
+        const 
+            computed_tail = tail :: jsonpath( empty( ) ),
+            $elemMatch = computed_tail :: property( $MATCH, computed_tail );
+
+        Object.assign( $match[ $MATCH ], { $elemMatch } );
+
+        return $match;
 
     },
 
