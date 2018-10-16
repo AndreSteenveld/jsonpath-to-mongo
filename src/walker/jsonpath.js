@@ -19,6 +19,9 @@ export const parse = {
             .entries( jsonpath( $match, tail )[ $MATCH ] )
             .map( ([ key, value ]) => {
 
+                if( "$" === key[ 0 ] )
+                    return [ node.value, { [ key ] : value } ];
+
                 const extended_key = [ node.value, key ]
                     .filter( truthy )
                     .join( "." );
@@ -29,6 +32,16 @@ export const parse = {
             .reduce( to_object, empty( ) );
 
         return $match;
+
+    },
+
+    wildcard: function( $match, [ node = null, ...tail ] = this ){
+
+        return { [ $MATCH ] : { 
+            
+            $elemMatch : tail :: jsonpath( empty( ) ) 
+        
+        }};
 
     },
 
@@ -76,6 +89,7 @@ export function jsonpath( $match, [ node = null, ...tail ] = this ){
         //
         case "root"              : return parse.root( $match, [ node, ...tail ] );
         case "identifier"        : return parse.identifier( $match, [ node, ...tail ] );
+        case "wildcard"          : return parse.wildcard( $match, [ node, ...tail ] );
         
         // We flatten the filter and script expression in to the entire AST, there is no reason
         // to catch these as they never appear in the generated AST.
