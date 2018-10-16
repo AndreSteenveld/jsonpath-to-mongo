@@ -2,7 +2,7 @@ import $ from "core-js/library";
 import aesprim from "jsonpath/lib/aesprim";
 
 import { $MATCH, $GEO_NEAR } from "../";
-import { empty, to_object, truthy } from "../utilities";
+import { empty, to_object, truthy, property } from "../utilities";
 import { default as expression, script_expression } from "./expression";
 
 export const parse = {
@@ -15,9 +15,14 @@ export const parse = {
 
     identifier( $match, [ node = null, ...tail ] = this ) {
 
+        const computed_tail = jsonpath( $match, tail );
+
         $match[ $MATCH ] = $.Object
-            .entries( jsonpath( $match, tail )[ $MATCH ] )
+            .entries( computed_tail :: property( $MATCH, computed_tail ) )
             .map( ([ key, value ]) => {
+
+                if( "$" === key[ 0 ] )
+                    return [ node.value, { [ key ] : value } ];
 
                 const extended_key = [ node.value, key ]
                     .filter( truthy )
@@ -27,6 +32,18 @@ export const parse = {
                 
             })
             .reduce( to_object, empty( ) );
+
+        return $match;
+
+    },
+
+    wildcard: function( $match, [ node = null, ...tail ] = this ){
+
+        const 
+            computed_tail = tail :: jsonpath( empty( ) ),
+            $elemMatch = computed_tail :: property( $MATCH, computed_tail );
+
+        Object.assign( $match[ $MATCH ], { $elemMatch } );
 
         return $match;
 
@@ -76,6 +93,7 @@ export function jsonpath( $match, [ node = null, ...tail ] = this ){
         //
         case "root"              : return parse.root( $match, [ node, ...tail ] );
         case "identifier"        : return parse.identifier( $match, [ node, ...tail ] );
+        case "wildcard"          : return parse.wildcard( $match, [ node, ...tail ] );
         
         // We flatten the filter and script expression in to the entire AST, there is no reason
         // to catch these as they never appear in the generated AST.
