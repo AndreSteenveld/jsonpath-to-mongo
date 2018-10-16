@@ -118,7 +118,36 @@ const matches = {
 
         }}
 
+    ],
+
+    "$.list[*][?( @.property === 'abc' )]": [
+
+        { $match: { 
+        
+            list: { $elemMatch: {
+
+                property : { $eq : "abc" }
+
+            }}
+        
+        }}
+
+    ],
+
+    "$.list[*].object[?( @.property === 'abc' )]": [
+
+        { $match: {
+
+            list: { $elemMatch: {
+
+                "object.property" : { $eq : 'abc' }
+
+            }}
+
+        }}
+
     ]
+
 
 };
 
